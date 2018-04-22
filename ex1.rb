@@ -1,33 +1,33 @@
-melody = (1..16).map {
+use_bpm 60
+
+# Genera una secuencia de 16 notas sin restricciones
+use_random_seed 0
+melody = (1..16).map do
   rrand_i(50, 85)
-}.ring
+end.ring
 
-bass = [melody[0] -12,
-        melody[3] - 17,
-        melody[7] -7,
-        melody[11] - 5].ring
+# Genera un bajo tomando 4 notas de la melodía generada
+bass = [melody[0]  - 24,
+        melody[3]  - 17,
+        melody[7]  - 19 ,
+        melody[11] - 17 ].ring
 
+# Melodía:
+# Tira una moneda: si cae cara, no suena la nota
+#                  si cae ceca, suena la próxima nota de la melodía
 live_loop :melody do
-  with_fx :echo, mix: 0.7, decay: 0.8 do
-    with_fx :octaver, mix:0.2, sub_amp: 0.3 do
-      sleep 0.5 if rand_i(5) > 3
-      use_synth :sine
-      play melody.tick
-      sleep 0.5
-    end
+  with_fx :pitch_shift, pitch: 12, mix: 0.4, decay: 0.8 do
+    sleep 0.5 if one_in(2)
+    use_synth :sine
+    play melody.tick
+    sleep 0.5
   end
 end
 
-puts bass
+# Bajo:
+# Repite 4 veces cada nota
 live_loop :bass do
-  use_synth :square
+  use_synth :fm
   note = bass.tick
-  play note - 12, release: 0.5, amp: 0.6
-  sleep 0.5
-  play note, release: 0.5, amp: 0.6
-  sleep 0.5
-  play note - 12, release: 0.5, amp: 0.6
-  sleep 0.5
-  play note, release: 0.5, amp: 0.6
-  sleep 0.5
+  play_pattern_timed [note]*4, 0.5, amp: 0.4
 end
